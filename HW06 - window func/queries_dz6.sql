@@ -418,3 +418,122 @@ from
 		join Sales.Orders so on so.CustomerID = sc.CustomerID
 group by sc.CustomerID, sc.CustomerName
 having count(so.OrderID) > 30 and max(so.OrderDate) < '2016-05-01'
+
+
+
+
+--По просьбе преподавателя сделал со статистикой 1 пункт
+
+--Я писал о том, что у меня план запроса показал одинаковую стоимость по 50
+--когда запускал в первый раз
+
+--приложил планы
+
+--а теперь со статистикой
+
+set statistics time on;
+go
+
+;with cte1 as
+(
+select
+	si.InvoiceID,
+	sc.CustomerName,
+	si.InvoiceDate,
+	sct.TransactionAmount,
+	(select
+		sum(sctp.TransactionAmount)
+	from
+		sales.Invoices sip
+			join sales.CustomerTransactions sctp on sctp.InvoiceID = sip.InvoiceID
+	where
+		sip.InvoiceDate between '2015-01-01' and EOMONTH(si.InvoiceDate)) as NarostItogMonth
+from
+	Sales.Invoices si
+		join Sales.Customers sc on sc.CustomerID = si.CustomerID
+		join Sales.CustomerTransactions sct on sct.InvoiceID = si.InvoiceID
+where
+	si.InvoiceDate >= '2015-01-01'
+)
+select * into #Invice2015_1 from cte1
+select * from #Invice2015_1 order by InvoiceID;
+
+set statistics time off;
+go
+
+/*
+SQL Server parse and compile time: 
+   CPU time = 125 ms, elapsed time = 134 ms.
+
+ SQL Server Execution Times:
+   CPU time = 40234 ms,  elapsed time = 40518 ms.
+
+(31440 rows affected)
+SQL Server parse and compile time: 
+   CPU time = 0 ms, elapsed time = 1 ms.
+
+(31440 rows affected)
+
+ SQL Server Execution Times:
+   CPU time = 125 ms,  elapsed time = 1963 ms.
+
+Completion time: 2020-10-23T17:48:51.1685406+03:00
+*/
+
+
+set statistics time on;
+go
+
+declare @Invoice2015_2 table
+(
+	InvoiceID int not null,
+	CustomerName nvarchar(100) not null,
+	InvoiceDate date not null,
+	TransactionAmount decimal(18, 2) not null,
+	SumAscItog float not null
+)
+;with cte2 as
+(
+select
+	si.InvoiceID,
+	sc.CustomerName,
+	si.InvoiceDate,
+	sct.TransactionAmount,
+	(select
+		sum(sctp.TransactionAmount)
+	from
+		sales.Invoices sip
+			join sales.CustomerTransactions sctp on sctp.InvoiceID = sip.InvoiceID
+	where
+		sip.InvoiceDate between '2015-01-01' and EOMONTH(si.InvoiceDate)) as NarostItogMonth
+from
+	Sales.Invoices si
+		join Sales.Customers sc on sc.CustomerID = si.CustomerID
+		join Sales.CustomerTransactions sct on sct.InvoiceID = si.InvoiceID
+where
+	si.InvoiceDate >= '2015-01-01'
+)
+insert into @Invoice2015_2 select * from cte2
+select * from @Invoice2015_2 order by InvoiceID;
+
+set statistics time off;
+go
+
+/*
+SQL Server parse and compile time: 
+   CPU time = 297 ms, elapsed time = 447 ms.
+
+ SQL Server Execution Times:
+   CPU time = 40281 ms,  elapsed time = 40811 ms.
+
+(31440 rows affected)
+
+(31440 rows affected)
+
+ SQL Server Execution Times:
+   CPU time = 157 ms,  elapsed time = 2223 ms.
+
+Completion time: 2020-10-23T17:50:40.6918836+03:00
+*/
+
+--Получается что с табличной переменной чуть-чуть помедленнее
