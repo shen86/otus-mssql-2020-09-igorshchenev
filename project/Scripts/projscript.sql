@@ -54,15 +54,12 @@ CREATE TABLE Sexes
 --Countries
 CREATE TABLE Countries
 (
-	ID SMALLINT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Countries_ID PRIMARY KEY,
+	ID TINYINT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Countries_ID PRIMARY KEY,
 	CountryName NVARCHAR(128) NOT NULL,
 	CountryCode NCHAR(3) NOT NULL,
 	CONSTRAINT UQ_Countries_CountryName UNIQUE (CountryName),
 	CONSTRAINT UQ_Countries_CountryCode UNIQUE (CountryCode)
 );
-
---Indexes for Countries
-CREATE INDEX IX_Countries_CountryName ON Countries (CountryName);
 
 
 
@@ -75,12 +72,12 @@ CREATE TABLE Employees
 	NameO NVARCHAR(64) NULL,
 	BirthDate DATE NOT NULL,
 	SexID TINYINT NOT NULL,
-	NationID SMALLINT NOT NULL,
+	NationID TINYINT NOT NULL,
 	AddressEmp NVARCHAR(512) NOT NULL,
 	DocumentEmp NVARCHAR(512) NOT NULL,
 	NumTab NVARCHAR(16) NOT NULL,
 	HireDate DATE NOT NULL,
-	DismissDate DATE NOT NULL,
+	DismissDate DATE NOT NULL CONSTRAINT DF_Employees_DismissDate DEFAULT ('9999-12-31'),
 	LoginEmp NVARCHAR(16) NOT NULL,
 	EmailEmp NVARCHAR(32) NOT NULL,
 	PhoneEmp NVARCHAR(16) NOT NULL,
@@ -89,7 +86,6 @@ CREATE TABLE Employees
 	CONSTRAINT FK_Employees_NationID FOREIGN KEY (NationID) REFERENCES Countries(ID),
 	CONSTRAINT UQ_Employees_DocumentEmp UNIQUE (DocumentEmp),
 	CONSTRAINT UQ_Employees_NumTab UNIQUE (NumTab),
-	CONSTRAINT DF_Employees_DismissDate DEFAULT ('9999-12-31') FOR DismissDate,
 	CONSTRAINT UQ_Employees_LoginEmp UNIQUE (LoginEmp),
 	CONSTRAINT UQ_Employees_EmailEmp UNIQUE (EmailEmp),
 	CONSTRAINT UQ_Employees_PhoneEmp UNIQUE (PhoneEmp),
@@ -97,76 +93,55 @@ CREATE TABLE Employees
 );
 
 --Indexes for Employees
-CREATE INDEX IX_Employees_NameF ON Employees (NameF);
-CREATE INDEX IX_Employees_NameI ON Employees (NameI);
-CREATE INDEX IX_Employees_NameO ON Employees (NameO);
+CREATE INDEX IX_Employees_NameFIO ON Employees (NameF, NameI, NameO);
 CREATE INDEX IX_Employees_BirthDate ON Employees (BirthDate);
-CREATE INDEX IX_Employees_SexID ON Employees (SexID);
-CREATE INDEX IX_Employees_NationID ON Employees (NationID);
-CREATE INDEX IX_Employees_AddressEmp ON Employees (AddressEmp);
-CREATE INDEX IX_Employees_NumTab ON Employees (NumTab);
 CREATE INDEX IX_Employees_HireDate ON Employees (HireDate);
 CREATE INDEX IX_Employees_DismissDate ON Employees (DismissDate);
-CREATE INDEX IX_Employees_LoginEmp ON Employees (LoginEmp);
-CREATE INDEX IX_Employees_EmailEmp ON Employees (EmailEmp);
-CREATE INDEX IX_Employees_PhoneEmp ON Employees (PhoneEmp);
 
 
 
 --Departments
 CREATE TABLE Departments
 (
-	ID INT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Departments_ID PRIMARY KEY,
+	ID SMALLINT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Departments_ID PRIMARY KEY,
 	DepartmentName NVARCHAR(64) NOT NULL,
 	StartDate DATE NOT NULL,
-	EndDate DATE NOT NULL,
+	EndDate DATE NOT NULL CONSTRAINT DF_Departments_EndDate DEFAULT ('9999-12-31'),
 	ManagerID INT NOT NULL,
-	CONSTRAINT DF_Departments_EndDate DEFAULT ('9999-12-31') FOR EndDate,
+	CONSTRAINT UQ_Departments_DepartmentName UNIQUE (DepartmentName),
 	CONSTRAINT FK_Departments_ManagerID FOREIGN KEY (ManagerID) REFERENCES Employees(ID)
 );
-
---Indexes for Departments
-CREATE INDEX IX_Departments_DepartmentName ON Departments (DepartmentName);
-CREATE INDEX IX_Departments_StartDate ON Departments (StartDate);
-CREATE INDEX IX_Departments_EndDate ON Departments (EndDate);
 
 
 
 --Jobs
 CREATE TABLE Jobs
 (
-	ID INT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Jobs_ID PRIMARY KEY,
+	ID SMALLINT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Jobs_ID PRIMARY KEY,
 	JobName NVARCHAR(32) NOT NULL,
 	StartDate DATE NOT NULL,
-	EndDate DATE NOT NULL,
+	EndDate DATE NOT NULL CONSTRAINT DF_Jobs_EndDate DEFAULT ('9999-12-31'),
 	MinSalary DECIMAL(11,2) NOT NULL,
 	MaxSalary DECIMAL(11,2) NOT NULL,
-	CONSTRAINT DF_Jobs_EndDate DEFAULT ('9999-12-31') FOR EndDate
+	CONSTRAINT UQ_Jobs_JobName UNIQUE (JobName)
 );
-
---Indexes for Jobs
-CREATE INDEX IX_Jobs_JobName ON Jobs (JobName);
-CREATE INDEX IX_Jobs_StartDate ON Jobs (StartDate);
-CREATE INDEX IX_Jobs_EndDate ON Jobs (EndDate);
 
 
 
 --Appointments
 CREATE TABLE Appointments
 (
-	ID INT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Jobs_ID PRIMARY KEY,
+	ID INT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Appointments_ID PRIMARY KEY,
 	EmpID INT NOT NULL,
 	StartDate DATE NOT NULL,
-	EndDate DATE NOT NULL,
-	DepID INT NOT NULL,
-	JobID INT NOT NULL,
-	RateEmp DECIMAL(3,2) NOT NULL,
+	EndDate DATE NOT NULL CONSTRAINT DF_Appointments_EndDate DEFAULT ('9999-12-31'),
+	DepID SMALLINT NOT NULL,
+	JobID SMALLINT NOT NULL,
+	RateEmp DECIMAL(3,2) NOT NULL CONSTRAINT DF_Appointments_RateEmp DEFAULT 1,
 	SalaryEmp DECIMAL(11,2) NOT NULL,
 	CONSTRAINT FK_Appointments_EmpID FOREIGN KEY (EmpID) REFERENCES Employees(ID),
-	CONSTRAINT DF_Appointments_EndDate DEFAULT ('9999-12-31') FOR EndDate,
 	CONSTRAINT FK_Appointments_DepID FOREIGN KEY (DepID) REFERENCES Departments(ID),
-	CONSTRAINT FK_Appointments_JobID FOREIGN KEY (JobID) REFERENCES Jobs(ID),
-	CONSTRAINT DF_Appointments_RateEmp DEFAULT 1 FOR RateEmp
+	CONSTRAINT FK_Appointments_JobID FOREIGN KEY (JobID) REFERENCES Jobs(ID)
 );
 
 --Indexes for Appointments
@@ -185,28 +160,100 @@ CREATE TABLE Clients
 	NameO NVARCHAR(64) NULL,
 	BirthDate DATE NOT NULL,
 	SexID TINYINT NULL,
-	NationID SMALLINT NULL,
+	NationID TINYINT NULL,
 	AddressClient NVARCHAR(512) NULL,
-	DocumentClient NVARCHAR(512) NOT NULL,
+	DocClient NVARCHAR(512) NOT NULL,
 	PhoneClient NVARCHAR(16) NOT NULL,
-	Discount DECIMAL(4,2) NOT NULL,
+	Discount DECIMAL(4,2) NULL,
 	Comment NVARCHAR(2048) NULL,
 	CONSTRAINT FK_Clients_SexID FOREIGN KEY (SexID) REFERENCES Sexes(ID),
 	CONSTRAINT FK_Clients_NationID FOREIGN KEY (NationID) REFERENCES Countries(ID),
-	CONSTRAINT UQ_Clients_DocumentClient UNIQUE (DocumentClient),
-	CONSTRAINT DF_Clients_Discount DEFAULT 0 FOR Discount
+	CONSTRAINT UQ_Clients_DocClient UNIQUE (DocClient),
+	CONSTRAINT UQ_Clients_PhoneClient UNIQUE (PhoneClient)
 );
 
 --Indexes for Clients
-CREATE INDEX IX_Clients_NameF ON Clients (NameF);
-CREATE INDEX IX_Clients_NameI ON Clients (NameI);
-CREATE INDEX IX_Clients_NameO ON Clients (NameO);
+CREATE INDEX IX_Clients_NameFIO ON Clients (NameF, NameI, NameO);
 CREATE INDEX IX_Clients_BirthDate ON Clients (BirthDate);
-CREATE INDEX IX_Clients_SexID ON Clients (SexID);
-CREATE INDEX IX_Clients_NationID ON Clients (NationID);
-CREATE INDEX IX_Clients_AddressClient ON Clients (AddressClient);
-CREATE INDEX IX_Clients_Discount ON Clients (Discount);
 
 
 
 --Sales
+CREATE TABLE Sales
+(
+	ID INT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Sales_ID PRIMARY KEY,
+	NumSal NVARCHAR(32) NOT NULL,
+	EmpID INT NOT NULL,
+	ClientID INT NOT NULL,
+	DateSal DATETIME2 NOT NULL,
+	Discount DECIMAL(4,2) NULL,
+	Comment NVARCHAR(2048) NULL,
+	CONSTRAINT UQ_Sales_NumSal UNIQUE (NumSal),
+	CONSTRAINT FK_Sales_EmpID FOREIGN KEY (EmpID) REFERENCES Employees(ID),
+	CONSTRAINT FK_Sales_ClientID FOREIGN KEY (ClientID) REFERENCES Clients(ID)
+);
+
+--Indexes for Sales
+CREATE INDEX IX_Sales_NumSal ON Sales (NumSal);
+CREATE INDEX IX_Sales_DateSal ON Sales (DateSal);
+
+
+
+--Categoyry
+CREATE TABLE Category
+(
+	ID TINYINT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Category_ID PRIMARY KEY,
+	NameCat NVARCHAR(64) NOT NULL,
+	TableCat NVARCHAR(32) NOT NULL,
+	Comment NVARCHAR(2048) NULL,
+	CONSTRAINT UQ_Category_NameCat UNIQUE (NameCat),
+	CONSTRAINT UQ_Category_TableCat UNIQUE (TableCat)
+);
+
+
+
+--SalesLines
+CREATE TABLE SalesLines
+(
+	ID INT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_SalesLines_ID PRIMARY KEY,
+	SalesID INT NOT NULL,
+	CategoryID TINYINT NOT NULL,
+	PositionID INT NOT NULL,
+	Quantity INT NOT NULL,
+	SumSal DECIMAL(11,2) NOT NULL,
+	Discount DECIMAL(4,2) NULL,
+	SumSalItog DECIMAL(11,2) NOT NULL,
+	Comment NVARCHAR(2048) NULL,
+	CONSTRAINT FK_SalesLines_SalesID FOREIGN KEY (SalesID) REFERENCES Sales(ID),
+	CONSTRAINT FK_SalesLines_CategoryID FOREIGN KEY (CategoryID) REFERENCES Category(ID)
+);
+
+--Indexes for SalesLines
+
+
+
+--CarServices
+CREATE TABLE CarServices
+(
+	ID INT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_CarServices_ID PRIMARY KEY,
+	CategoryID TINYINT NOT NULL,
+	ServiceName NVARCHAR(64) NOT NULL,
+	Price DECIMAL(11,2) NOT NULL,
+	Comment NVARCHAR(2048) NULL,
+	CONSTRAINT FK_CarServices_CategoryID FOREIGN KEY (CategoryID) REFERENCES Category(ID),
+	CONSTRAINT UQ_CarServices_ServiceName UNIQUE (ServiceName)
+);
+
+
+
+--Firm
+CREATE TABLE Firm
+(
+	ID INT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Firm_ID PRIMARY KEY,
+	MakerName NVARCHAR(64) NOT NULL,
+	AddressFirm NVARCHAR(512) NOT NULL,
+	CountryID TINYINT NOT NULL,
+	Comment NVARCHAR(2048) NULL,
+	CONSTRAINT UQ_Firm_MakerName UNIQUE (MakerName),
+	CONSTRAINT FK_Firm_CountryID FOREIGN KEY (CountryID) REFERENCES Countries(ID)
+);
