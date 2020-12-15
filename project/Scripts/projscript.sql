@@ -194,7 +194,6 @@ CREATE TABLE Sales
 );
 
 --Indexes for Sales
-CREATE INDEX IX_Sales_NumSal ON Sales (NumSal);
 CREATE INDEX IX_Sales_DateSal ON Sales (DateSal);
 
 
@@ -220,9 +219,9 @@ CREATE TABLE SalesLines
 	CategoryID TINYINT NOT NULL,
 	PositionID INT NOT NULL,
 	Quantity INT NOT NULL,
-	SumSal DECIMAL(11,2) NOT NULL,
+	SumPosition DECIMAL(11,2) NOT NULL,
 	Discount DECIMAL(4,2) NULL,
-	SumSalItog DECIMAL(11,2) NOT NULL,
+	SumTotal DECIMAL(11,2) NOT NULL,
 	Comment NVARCHAR(2048) NULL,
 	CONSTRAINT FK_SalesLines_SalesID FOREIGN KEY (SalesID) REFERENCES Sales(ID),
 	CONSTRAINT FK_SalesLines_CategoryID FOREIGN KEY (CategoryID) REFERENCES Category(ID)
@@ -246,6 +245,16 @@ CREATE TABLE CarServices
 
 
 
+--Color
+CREATE TABLE Color
+(
+	ID TINYINT NOT NULL IDENTITY(1, 1) CONSTRAINT PK_Color_ID PRIMARY KEY,
+	ColorName NVARCHAR(16) NOT NULL,
+	CONSTRAINT UQ_Color_ColorName UNIQUE (ColorName)
+);
+
+
+
 --Firm
 CREATE TABLE Firm
 (
@@ -257,3 +266,7 @@ CREATE TABLE Firm
 	CONSTRAINT UQ_Firm_MakerName UNIQUE (MakerName),
 	CONSTRAINT FK_Firm_CountryID FOREIGN KEY (CountryID) REFERENCES Countries(ID)
 );
+
+
+
+--CarParts
