@@ -91,7 +91,7 @@ BEGIN
 	IF EXISTS (SELECT * FROM Sales.Invoices WHERE CustomerID = @CustomerID)
 	BEGIN
 	INSERT INTO Sales.UserCountInvBtwDate (CustomerId, CountInvoice, DateStart, DateEnd)
-	VALUES (@CustomerID, (SELECT COUNT(*) FROM Sales.Orders WHERE CustomerId = @CustomerID AND OrderDate BETWEEN @StartDate AND @EndDate), @StartDate, @EndDate);
+	VALUES (@CustomerID, (SELECT COUNT(*) FROM Sales.Invoices WHERE CustomerId = @CustomerID AND InvoiceDate BETWEEN @StartDate AND @EndDate), @StartDate, @EndDate);
 	END;
 
 	-- Confirm and Send a reply
