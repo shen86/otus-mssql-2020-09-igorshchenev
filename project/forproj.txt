@@ -1,0 +1,6 @@
+sales lines - bigint
+discounts
+appoint - version?
+goroda?
+
+hranim proc dlya demonstracii
