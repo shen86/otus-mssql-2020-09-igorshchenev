@@ -16,7 +16,7 @@ CREATE DATABASE CarShowroom
 ON
 (
 	NAME = N'CarShowroom_dat',
-	FILENAME = N'C:\DB\db_cs_dat.mdf',
+	FILENAME = N'E:\DB1\db_cs_dat.mdf',
 	SIZE = 64,
 	MAXSIZE = UNLIMITED,
 	FILEGROWTH = 8
@@ -24,7 +24,7 @@ ON
 LOG ON
 (
 	NAME = N'CarShowroom_log',
-	FILENAME = N'C:\DB\db_cs_log.ldf',
+	FILENAME = N'E:\DB1\db_cs_log.ldf',
 	SIZE = 8,
 	MAXSIZE = 512,
 	FILEGROWTH = 4
@@ -107,7 +107,7 @@ CREATE TABLE Departments
 	DepartmentName NVARCHAR(64) NOT NULL,
 	StartDate DATE NOT NULL,
 	EndDate DATE NOT NULL CONSTRAINT DF_Departments_EndDate DEFAULT ('9999-12-31'),
-	ManagerID INT NOT NULL,
+	ManagerID INT NULL,
 	CONSTRAINT UQ_Departments_DepartmentName UNIQUE (DepartmentName),
 	CONSTRAINT FK_Departments_ManagerID FOREIGN KEY (ManagerID) REFERENCES Employees(ID)
 );
@@ -163,13 +163,12 @@ CREATE TABLE Clients
 	NationID TINYINT NULL,
 	AddressClient NVARCHAR(512) NULL,
 	DocClient NVARCHAR(512) NOT NULL,
-	PhoneClient NVARCHAR(16) NOT NULL,
+	PhoneClient NVARCHAR(16) NULL,
 	Discount DECIMAL(4,2) NULL,
 	Comment NVARCHAR(2048) NULL,
 	CONSTRAINT FK_Clients_SexID FOREIGN KEY (SexID) REFERENCES Sexes(ID),
 	CONSTRAINT FK_Clients_NationID FOREIGN KEY (NationID) REFERENCES Countries(ID),
-	CONSTRAINT UQ_Clients_DocClient UNIQUE (DocClient),
-	CONSTRAINT UQ_Clients_PhoneClient UNIQUE (PhoneClient)
+	CONSTRAINT UQ_Clients_DocClient UNIQUE (DocClient)
 );
 
 --Indexes for Clients
@@ -186,7 +185,6 @@ CREATE TABLE Sales
 	EmpID INT NOT NULL,
 	ClientID INT NOT NULL,
 	DateSal DATETIME2 NOT NULL,
-	Discount DECIMAL(4,2) NULL,
 	Comment NVARCHAR(2048) NULL,
 	CONSTRAINT UQ_Sales_NumSal UNIQUE (NumSal),
 	CONSTRAINT FK_Sales_EmpID FOREIGN KEY (EmpID) REFERENCES Employees(ID),
@@ -228,7 +226,7 @@ CREATE TABLE SalesLines
 );
 
 --Indexes for SalesLines
---need to create indexes
+CREATE COLUMNSTORE INDEX NCCX_SalesLines ON SalesLines (SalesID, CategoryID, PositionID, Quantity, SumPosition, Discount, SumTotal);
 
 
 --CarServices
@@ -267,6 +265,7 @@ CREATE TABLE Firm
 );
 
 --Indexes for Firm
+CREATE INDEX IX_Firm_MakerName ON Firm (MakerName);
 
 
 
@@ -290,7 +289,7 @@ CREATE TABLE CarParts
 );
 
 --Indexes for CarParts
-
+CREATE INDEX IX_CarParts_CarPartsName ON CarParts (CarPartsName);
 
 
 --CarBody
@@ -357,3 +356,4 @@ CREATE TABLE Cars
 );
 
 --Indexes for Cars
+CREATE INDEX IX_Cars_CarName ON Cars (CarName);
